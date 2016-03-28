@@ -11,6 +11,7 @@ import V5_report.QueryExpressionType;
 import V5_report.QueryType;
 import V5_report.Report;
 import V5_report.SourceType;
+import V5_report.SourceType.SqlQuery.MdProjectedItems.MdProjectedItem;
 
 public class RognosQuery {
 	
@@ -40,6 +41,17 @@ public class RognosQuery {
 		return q;
 	}
 	
+	public String getSQLText(){
+		return q.getSource().getSqlQuery().getSqlText();
+	}
+	
+	public void setSQL(String sqlName, String sqlText,String dataSource,String type){
+		q.getSource().getSqlQuery().setName(sqlName);;
+		q.getSource().getSqlQuery().setDataSource(dataSource);
+		q.getSource().getSqlQuery().setType(type);
+		q.getSource().getSqlQuery().setSqlText(sqlText);
+	}
+	
 	private SourceType setSourceType(sourceTypeEnum ste){
 		
 			st = of.createSourceType();
@@ -52,6 +64,8 @@ public class RognosQuery {
 					break;
 				case SQLQUERY:
 					st.setSqlQuery(of.createSourceTypeSqlQuery());
+					st.getSqlQuery().setMdProjectedItems(of.createSourceTypeSqlQueryMdProjectedItems());
+					
 					//TODO add support for hard coded sql
 					System.out.println("Setup SQL Query here");
 					break;
@@ -64,6 +78,20 @@ public class RognosQuery {
 			};
 			q.setSource(st);
 			return st;
+	}
+	
+	public RognosDataItem addSQLDataItem(String sqlName,String projectedItem){
+		// use projected item as data item name
+		return addSQLDataItem(sqlName,projectedItem,projectedItem);
+	}
+	public RognosDataItem addSQLDataItem(String sqlName,String projectedItem,String dataItemName){
+		RognosDataItem rdi = new RognosDataItem("[" + sqlName + "].[" + projectedItem + "]",dataItemName,"none");
+		
+		MdProjectedItem pi = of.createSourceTypeSqlQueryMdProjectedItemsMdProjectedItem();
+		pi.setName(projectedItem);
+		q.getSource().getSqlQuery().getMdProjectedItems().getMdProjectedItem().add(pi);
+		
+		return rdi;
 	}
 	
 	public RognosDataItem addDataItem(String namespace,String querySubject, String dataItemName) {
@@ -107,6 +135,7 @@ public class RognosQuery {
 	
 	public class RognosDataItem{
 		private DataItem di;
+		private MdProjectedItem pi;
 		RognosDataItem(String expression, String dataItemName, String aggregateType){
 			di = of.createDataItem();
 			di.setName(dataItemName);
@@ -116,11 +145,21 @@ public class RognosQuery {
 			qet.setValue(expression);
 
 			di.setExpression(qet);
-			di.setAggregate(aggregateType);
+			if(aggregateType.length()>0){
+				di.setAggregate(aggregateType);
+			}
 		}
 		RognosDataItem(DataItem di_in){
 			di = di_in;
 		}
+		RognosDataItem(MdProjectedItem pi_in){
+			this(pi_in,pi_in.getName());
+		}
+		RognosDataItem(MdProjectedItem pi_in,String dataItemName){
+			this(pi_in.getName(),dataItemName,"");
+			pi = pi_in;
+		}
+		
 		private DataItem getDataItem(){
 			return di;
 		}
