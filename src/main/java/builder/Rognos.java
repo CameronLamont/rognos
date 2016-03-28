@@ -5,8 +5,7 @@ import builder.RognosQuery.sourceTypeEnum;
 public class Rognos {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		
 		RognosReport r = new RognosReport("/content/folder[@name='Samples']/folder[@name='Models']/package[@name='GO Sales (query)']/model[@name='model']");
 		
 		// Create a query with 3 items
@@ -17,8 +16,9 @@ public class Rognos {
 		rq.addDataItem("[Sales (query)].[Order].[Order number]","Order number");
 		
 		// Create a page
-		r.addReportPage("Page1");
+		RognosPage p = r.addReportPage("Page1");
 		
+		RognosList l = p.addList("List1",rq);
 		
 		System.out.println("blah");
 		r.marshal();

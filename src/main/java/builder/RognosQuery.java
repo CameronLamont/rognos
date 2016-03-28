@@ -1,5 +1,6 @@
 package builder;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import javax.management.QueryExp;
@@ -117,9 +118,34 @@ public class RognosQuery {
 			di.setExpression(qet);
 			di.setAggregate(aggregateType);
 		}
+		RognosDataItem(DataItem di_in){
+			di = di_in;
+		}
 		private DataItem getDataItem(){
 			return di;
 		}
+		public String getDataItemName() {
+
+			return di.getName();
+		}
+	}
+
+	public java.util.List<RognosDataItem> getDataItems(){
+		java.util.List<RognosDataItem> rdilist = new ArrayList<RognosDataItem>();
+		
+		RognosDataItem rdi;
+		
+		for(Object di: q.getSelection().getDataItemElement()){
+			rdi = new RognosDataItem((DataItem)di);
+			rdilist.add(rdi);
+		}
+		
+		return rdilist;
+	}
+
+	public String getName() {
+
+		return q.getName();
 	}
 	
 }

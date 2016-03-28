@@ -38,12 +38,13 @@ public class RognosReport {
 		
 	}
 
-	public Page addReportPage(String pageName){
+	public RognosPage addReportPage(String pageName){
 		LayoutType.ReportPages rp = rpt.getLayouts().getLayout().getReportPages();
-		Page p = of.createPage();
-		p.setName(pageName);
 		
-		rp.getPageOrPageSetOrBookletItem().add(p);
+		RognosPage p = new RognosPage(pageName);
+		
+		
+		rp.getPageOrPageSetOrBookletItem().add(p.getPage());
 		return p;
 	}
 	
@@ -61,6 +62,14 @@ public class RognosReport {
         }
     }
 
+	public RognosQuery addModelQuery(String queryName){
+		return this.addQuery(queryName, sourceTypeEnum.MODEL);
+	}
+	
+	public RognosQuery addSQLQuery(String queryName){
+		return this.addQuery(queryName, sourceTypeEnum.SQLQUERY);
+	}
+	
 	public RognosQuery addQuery(String queryName, sourceTypeEnum ste) {
 		RognosQuery q = new RognosQuery(rpt,queryName,ste);
 		
