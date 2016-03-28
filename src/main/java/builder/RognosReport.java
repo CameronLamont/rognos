@@ -1,6 +1,8 @@
 package builder;
 
 import V5_report.*;
+import builder.RognosQuery.sourceTypeEnum;
+
 import javax.xml.bind.*;
 
 public class RognosReport {
@@ -21,7 +23,7 @@ public class RognosReport {
 		rpt.setModelPath(modelPath);
 		
 		
-		// set default dril behaviour
+		// set default drill behaviour
 		DrillBehavior db = of.createDrillBehavior();
 		db.setModelBasedDrillThru(true);
 		rpt.setDrillBehavior(db);
@@ -34,9 +36,6 @@ public class RognosReport {
 		rpt.getLayouts().setLayout(new LayoutType());
 		rpt.getLayouts().getLayout().setReportPages(of.createLayoutTypeReportPages());
 		
-		
-	
-		
 	}
 
 	public Page addReportPage(String pageName){
@@ -48,22 +47,7 @@ public class RognosReport {
 		return p;
 	}
 	
-	public QueryType addQuery(String queryName,boolean modelSource){
-		QueryType q = of.createQueryType();
-		q.setName(queryName);
-		
-		SourceType st = of.createSourceType();
-		//TODO add support for hard coded sql
-		if(modelSource==true){
-		
-			st.setModel(of.createSourceTypeModel());
-		
-		}
-		q.setSource(st);
-		
-		rpt.getQueries().getQuery().add(q);
-		return q;
-	}
+	
 	
 	public void marshal() {
         try {
@@ -76,4 +60,13 @@ public class RognosReport {
         	System.out.println(jbe.toString());
         }
     }
+
+	public RognosQuery addQuery(String queryName, sourceTypeEnum ste) {
+		RognosQuery q = new RognosQuery(rpt,queryName,ste);
+		
+		rpt.getQueries().getQuery().add(q.getQueryType());
+		
+		return q;
+		
+	}
 }
