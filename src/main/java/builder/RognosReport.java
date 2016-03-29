@@ -3,6 +3,8 @@ package builder;
 import V5_report.*;
 import builder.RognosQuery.sourceTypeEnum;
 
+import java.io.OutputStream;
+
 import javax.xml.bind.*;
 
 public class RognosReport {
@@ -10,19 +12,14 @@ public class RognosReport {
 	private ObjectFactory of;
 	private Report rpt;
 	
-	public RognosReport(String modelPath){
+	public RognosReport(){
 		of = new ObjectFactory();
 		rpt = of.createReport();
 		
 		// set default style version and expression locale
 		rpt.setUseStyleVersion("10");
 		rpt.setExpressionLocale("en-us");
-		
-		// set model path
-		//rpt.setModelPath("/content/folder[@name='Samples']/folder[@name='Models']/package[@name='GO Sales (query)']/model[@name='model']");
-		rpt.setModelPath(modelPath);
-		
-		
+
 		// set default drill behaviour
 		DrillBehavior db = of.createDrillBehavior();
 		db.setModelBasedDrillThru(true);
@@ -37,7 +34,29 @@ public class RognosReport {
 		rpt.getLayouts().getLayout().setReportPages(of.createLayoutTypeReportPages());
 		
 	}
-
+	public RognosReport(String reportName){
+		this();
+		this.setReportName(reportName);
+		
+	}
+	
+	public RognosReport(String reportName, String modelPath){
+		this();
+		this.setReportName(reportName);
+		
+		// set model path
+		//rpt.setModelPath("/content/folder[@name='Samples']/folder[@name='Models']/package[@name='GO Sales (query)']/model[@name='model']");
+		this.setModelPath(modelPath);
+		
+	}
+	public void setReportName(String reportName){
+		rpt.setReportName(reportName);
+	}
+	
+	public void setModelPath(String modelPath){
+		rpt.setModelPath(modelPath);
+	}
+	
 	public RognosPage addReportPage(String pageName){
 		LayoutType.ReportPages rp = rpt.getLayouts().getLayout().getReportPages();
 		
@@ -48,14 +67,17 @@ public class RognosReport {
 		return p;
 	}
 	
+	public void marshal(){
+		this.marshal(System.out);
+	}
 	
 	
-	public void marshal() {
+	public void marshal(OutputStream os) {
         try {
         	//JAXBElement<Report> mr = rpt.;
             JAXBContext jc = JAXBContext.newInstance( "V5_report" );
             Marshaller m = jc.createMarshaller();
-            m.marshal( rpt, System.out );
+            m.marshal( rpt, os );
         } catch( JAXBException jbe ){
             // ...
         	System.out.println(jbe.toString());

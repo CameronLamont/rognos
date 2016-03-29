@@ -6,7 +6,9 @@ public class Rognos {
 
 	public static void main(String[] args) {
 		
-		RognosReport r = new RognosReport("/content/folder[@name='Samples']/folder[@name='Models']/package[@name='GO Sales (query)']/model[@name='model']");
+		RognosReport r = new RognosReport("Report1");
+				
+		r.setModelPath("/content/folder[@name='Samples']/folder[@name='Models']/package[@name='GO Sales (query)']/model[@name='model']");
 		
 		// Create a query with 3 items
 		RognosQuery rq = r.addQuery("Query1",sourceTypeEnum.MODEL);
@@ -18,10 +20,11 @@ public class Rognos {
 		// Create a page
 		RognosPage p = r.addReportPage("Page1");
 		
+		// Create a list within the page
 		RognosList l = p.addList("List1",rq);
 		
 		System.out.println("blah");
-		r.marshal();
+		r.marshal(System.out);
 	}
 
 }
