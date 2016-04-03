@@ -3,6 +3,8 @@ package builder;
 import V5_report.*;
 import builder.RognosQuery.sourceTypeEnum;
 
+import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.xml.bind.*;
@@ -34,6 +36,11 @@ public class RognosReport {
 		rpt.getLayouts().getLayout().setReportPages(of.createLayoutTypeReportPages());
 		
 	}
+	
+	public RognosReport(File f){
+		rpt = unmarshal(f);
+	}
+	
 	public RognosReport(String reportName){
 		this();
 		this.setReportName(reportName);
@@ -77,12 +84,30 @@ public class RognosReport {
         	//JAXBElement<Report> mr = rpt.;
             JAXBContext jc = JAXBContext.newInstance( "V5_report" );
             Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             m.marshal( rpt, os );
+            
         } catch( JAXBException jbe ){
             // ...
         	System.out.println(jbe.toString());
         }
     }
+	
+	public Report unmarshal(File f){
+		 try {
+	        	//JAXBElement<Report> mr = rpt.;
+	            JAXBContext jc = JAXBContext.newInstance( "V5_report" );
+	            Unmarshaller u = jc.createUnmarshaller();
+	            //m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+	            //m.marshal( rpt, os );
+	            return (Report)u.unmarshal(f);
+	            
+	        } catch( JAXBException jbe ){
+	            // ...
+	        	System.out.println(jbe.toString());
+	        	return null;
+	        }
+	}
 
 	public RognosQuery addModelQuery(String queryName){
 		return this.addQuery(queryName, sourceTypeEnum.MODEL);

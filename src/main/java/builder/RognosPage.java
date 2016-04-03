@@ -106,7 +106,7 @@ public class RognosPage {
 
 	public RognosList addList(String listName, RognosQuery rq) {
 		
-		RognosList l = new RognosList(listName, rq);
+		RognosList l = new RognosList(this, listName, rq);
 		
 		//add to Collection of lists
 		p.getPageBody().getContents().getLayoutElement().add(l.getList());

@@ -15,20 +15,34 @@ import builder.RognosQuery.RognosDataItem;
 public class RognosList {
 	private ObjectFactory of;
 	private List l;
-	private RognosQuery q;
+	private RognosQuery rq;
+	private RognosPage pg;
 	
-	public RognosList(String listName, RognosQuery refQuery){
+	public RognosPage getPage() {
+		return pg;
+	}
+
+	public void setPage(RognosPage pg) {
+		this.pg = pg;
+	}
+
+	public RognosList(RognosPage page, String listName, RognosQuery refQuery){
+		this(page,listName);
+			
+		this.setRefQuery(refQuery);
+
+	}
+
+	public RognosList(RognosPage page, String listName) {
 		DefaultStyle ds;
 		
 		of = new ObjectFactory();
 		l = of.createList();
 		
+		this.setPage(page);
+		
 		l.setName(listName);
 
-		// Link Query TODO add to query collection of references
-		l.setRefQuery(refQuery.getName());
-		q = refQuery;
-		
 		l.setNoDataHandler(of.createNoDataHandler());
 		l.getNoDataHandler().setContents(of.createContents());
 		//l.getNoDataHandler().getContents().getLayoutElement().add
@@ -41,48 +55,68 @@ public class RognosList {
 		ds.setRefStyle("ls");
 		l.getStyle().getDefaultStyles().getDefaultStyle().add(ds);
 				
-		// get data items attached to the query
-		java.util.List<RognosDataItem> rdilist = q.getDataItems();
-		
 		l.setListColumns(of.createListListColumns());
+	}
+	
+	private void setRefQuery(RognosQuery refQuery){
+		setRefQuery(refQuery,true);
+	}
+	
+	private void setRefQuery(RognosQuery refQuery,boolean addColumns){
 		
-		for(RognosDataItem rdi: rdilist){
-			// for each data item create a column, title and body
-			
-			ListColumn lc = new ListColumn();
-			
-			
-			lc.setListColumnTitle(of.createListListColumnsListColumnListColumnTitle());
-			
-			lc.getListColumnTitle().setStyle(of.createStyle());
-			
-			ds = of.createDefaultStylesDefaultStyle();
-			ds.setRefStyle("lt");
-			lc.getListColumnTitle().getStyle().setDefaultStyles(of.createDefaultStyles());
-			lc.getListColumnTitle().getStyle().getDefaultStyles().getDefaultStyle().add(ds);
-			
-			
-			lc.getListColumnTitle().setContents(of.createContents());
-			addDataItemLabel(lc.getListColumnTitle().getContents(), rdi.getDataItemName());
-			
-			lc.setListColumnBody(of.createListListColumnsListColumnListColumnBody());
-			
-			lc.getListColumnBody().setStyle(of.createStyle());
-			ds = of.createDefaultStylesDefaultStyle();
-			ds.setRefStyle("lc"); // sometimes this is 'lm' m for measure?
-			lc.getListColumnBody().getStyle().setDefaultStyles(of.createDefaultStyles());
-			lc.getListColumnBody().getStyle().getDefaultStyles().getDefaultStyle().add(ds);
-			
-			
-			lc.getListColumnBody().setContents(of.createContents());
-			addDataItemValue(lc.getListColumnBody().getContents(), rdi.getDataItemName());
-			
-			
-			// add the column to the columns collection
-			l.getListColumns().getListColumn().add(lc);
-			
+		
+		// Link Query TODO add to query collection of references
+		l.setRefQuery(refQuery.getName());
+		rq = refQuery;
+		
+		
+		if(addColumns){
+			// get data items attached to the query
+			java.util.List<RognosDataItem> rdilist = rq.getDataItems();
+
+			for(RognosDataItem rdi: rdilist){
+				// for each data item create a column, title and body
+				addListColumn(rdi);
+				
+				}
 		}
 		
+	}
+
+	
+	public ListColumn addListColumn(RognosDataItem rdi) {
+		DefaultStyle ds;
+		ListColumn lc = new ListColumn();
+		
+		lc.setListColumnTitle(of.createListListColumnsListColumnListColumnTitle());
+		
+		lc.getListColumnTitle().setStyle(of.createStyle());
+		
+		ds = of.createDefaultStylesDefaultStyle();
+		ds.setRefStyle("lt");
+		lc.getListColumnTitle().getStyle().setDefaultStyles(of.createDefaultStyles());
+		lc.getListColumnTitle().getStyle().getDefaultStyles().getDefaultStyle().add(ds);
+		
+		
+		lc.getListColumnTitle().setContents(of.createContents());
+		addDataItemLabel(lc.getListColumnTitle().getContents(), rdi.getDataItemName());
+		
+		lc.setListColumnBody(of.createListListColumnsListColumnListColumnBody());
+		
+		lc.getListColumnBody().setStyle(of.createStyle());
+		ds = of.createDefaultStylesDefaultStyle();
+		ds.setRefStyle("lc"); // sometimes this is 'lm' m for measure?
+		lc.getListColumnBody().getStyle().setDefaultStyles(of.createDefaultStyles());
+		lc.getListColumnBody().getStyle().getDefaultStyles().getDefaultStyle().add(ds);
+		
+		
+		lc.getListColumnBody().setContents(of.createContents());
+		addDataItemValue(lc.getListColumnBody().getContents(), rdi.getDataItemName());
+		
+		// add the column to the columns collection
+		l.getListColumns().getListColumn().add(lc);
+		
+		return lc;
 	}
 	
 	private TextItem addDataItemValue(Contents cont,String refDataItem){

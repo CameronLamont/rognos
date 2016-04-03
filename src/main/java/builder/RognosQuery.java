@@ -1,5 +1,7 @@
 package builder;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -34,13 +36,28 @@ public class RognosQuery {
 		q.setName(queryName);
 		
 		q.setSelection(of.createSelection());
-		q.setDetailFilters(of.createQueryTypeDetailFilters());
-		q.setSummaryFilters(of.createQueryTypeSummaryFilters());
+		
 		
 		this.setSourceType(ste);
 //		rpt.getQueries().getQuery().add(q);
 		//return q;
 	}
+	
+	private void setDetailFilters(QueryType.DetailFilters new_df){
+		q.setDetailFilters(new_df);
+	}
+	private QueryType.DetailFilters getDetailFilters(){
+		if(q.getDetailFilters() == null){
+			this.setDetailFilters(of.createQueryTypeDetailFilters());
+		}
+		return q.getDetailFilters();
+	}
+	
+	private void setSummaryFilters(){
+		q.setDetailFilters(of.createQueryTypeDetailFilters());
+	}
+	
+	
 	public QueryType getQueryType(){
 		return q;
 	}
@@ -137,6 +154,28 @@ public class RognosQuery {
 	}
 	
 	
+	public enum detailFilterTypeEnum{
+				DetailFilterExpression,
+				DetailFilterCompare,
+				DetailFilterInValues
+				//,
+	//			DetailFilterNull,
+	//			DetailFilterNot,
+	//			DetailFilterInMembers,
+	//			DetailFilterOr,
+	//			DetailFilterAnd,
+	//			DetailFilterRange,
+	//			DetailFilterStringCompare
+			}
+
+	public RognosDetailFilterExpression addDetailFilterExpression(String expression){
+		RognosDetailFilterExpression rdf;
+		System.out.println(this.getClass().getName());
+		rdf = new RognosDetailFilterExpression(this, expression);
+		return rdf;
+	}
+
+
 	public class RognosDataItem{
 		private DataItem di;
 		private MdProjectedItem pi;
@@ -179,50 +218,27 @@ public class RognosQuery {
 		}
 	}
 	
-	public enum detailFilterTypeEnum{
-			DetailFilterCompare,
-			DetailFilterInValues,
-			DetailFilterNull,
-			DetailFilterNot,
-			DetailFilterInMembers,
-			DetailFilterOr,
-			DetailFilterAnd,
-			DetailFilterRange,
-			DetailFilterStringCompare
-		}
-	
-	public RognosDetailFilter addDetailFilter(detailFilterTypeEnum ft){
-		RognosDetailFilter rdf;
-		
-		rdf = null;
-		try {
-			rdf = (RognosDetailFilter)Class.forName("Rognos" + ft.toString()).newInstance();
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return rdf;
-	}
-	
 	public class RognosDetailFilter {
 		protected DetailFilter df;
 		protected RognosDataItem rdi;
+		protected RognosQuery rq;
 		
-		
-		RognosDetailFilter(){
-			this("required",false);
+		RognosDetailFilter(RognosQuery rq_in){
+			this(rq_in,"required",false);
 		}
-		RognosDetailFilter(String use, boolean postAutoAggregation){
+		RognosDetailFilter(RognosQuery rq_in, String use, boolean postAutoAggregation){
 			df = of.createDetailFilter();
-			df.setUse(use);
-			df.setPostAutoAggregation(postAutoAggregation);
-			df.setFilterDefinition(of.createFilterDefinition());
+			//df.setUse(use);
+			//df.setPostAutoAggregation(postAutoAggregation);
+			//df.setFilterDefinition(of.createFilterDefinition());
+			
+			rq = rq_in;
+			
+			rq.addDetailFilter(df);
+		}
+		private RognosQuery getQuery()
+		{
+			return rq;
 		}
 		
 		private DetailFilter getDetailFilter(){
@@ -234,22 +250,44 @@ public class RognosQuery {
 		}
 	}
 	
+	public class RognosDetailFilterExpression extends RognosDetailFilter{
+		private QueryExpressionType f;
+		
+		RognosDetailFilterExpression(RognosQuery rq_in){
+			super(rq_in);
+			f = of.createQueryExpressionType();
+			df.setFilterExpression(f);
+		}
+		RognosDetailFilterExpression(RognosQuery rq_in, String expression){
+			this(rq_in);
+			this.setExpression(expression);
+			System.out.println(this.getClass().getName());
+		}
+		
+		private void setExpression(String expression){
+			f.setValue(expression);
+		}
+		
+	}
+	
+	
 	public class RognosDetailFilterCompare extends RognosDetailFilter{
 		private FilterDefinition.FilterCompare f;
 		
-		RognosDetailFilterCompare(){
-			super();
+		RognosDetailFilterCompare(RognosQuery rq_in){
+			super(rq_in);
 			f = of.createFilterDefinitionFilterCompare();
+			df.getFilterDefinition().setFilterCompare(f);
 		}
-		RognosDetailFilterCompare(RognosDataItem rdi_in, String dataType, String operator){
-			this();
+		RognosDetailFilterCompare(RognosQuery rq_in,RognosDataItem rdi_in, String dataType, String operator){
+			this(rq_in);
 			this.setDataItem(rdi_in, dataType, operator);
 		}
 		
 		private void setDataItem(RognosDataItem rdi_in, String dataType, String operator){
 			rdi = rdi_in;
 			
-			df.getFilterDefinition().setFilterCompare(f);
+			
 			f.setRefDataItem(rdi.getDataItemName());
 			f.setDataType(dataType);
 			f.setOperator(dataType);
@@ -266,19 +304,20 @@ public class RognosQuery {
 	public class RognosDetailFilterInValues extends RognosDetailFilter{
 		private FilterDefinition.FilterInValues f;
 		
-		RognosDetailFilterInValues(){
-			super();
+		RognosDetailFilterInValues(RognosQuery rq_in){
+			super(rq_in);
 			f = of.createFilterDefinitionFilterInValues();
+			df.getFilterDefinition().setFilterInValues(f);
 		}
-		RognosDetailFilterInValues(RognosDataItem rdi_in, String dataType){
-			this();
+		RognosDetailFilterInValues(RognosQuery rq_in,RognosDataItem rdi_in, String dataType){
+			this(rq_in);
 			this.setDataItem(rdi_in, dataType);
 		}
 		
 		private void setDataItem(RognosDataItem rdi_in, String dataType){
 			rdi = rdi_in;
 			
-			df.getFilterDefinition().setFilterInValues(f);
+			
 			f.setFilterValues(of.createFilterDefinitionFilterInValuesFilterValues());
 			f.setRefDataItem(rdi.getDataItemName());
 			f.setDataType(dataType);
@@ -303,6 +342,11 @@ public class RognosQuery {
 		}
 		
 		return rdilist;
+	}
+
+	private void addDetailFilter(DetailFilter df) {
+
+		this.getDetailFilters().getDetailFilter().add(df);
 	}
 
 	public String getName() {
